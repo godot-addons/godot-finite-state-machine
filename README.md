@@ -82,21 +82,52 @@ sm.set_target(get_tree().get_root().get_node("enemy"))
 sm.set_initial_state("patrol")
 ```
 
-## Miscellaneous Usage
+## State Machine
+
+### State Machine Target
 
 ```gdscript
-// Get target object
+// Set the state machine's target (recursively sets on states)
+sm.set_target(get_node("player"))
+
+// Get state machine's target object
 var player = sm.get_target()
+```
 
-// Get initial state
+### State Machine Initial State
+
+```gdscript
+// Set the state machine's initial state
+sm.set_initial_state("sleeping")
+
+// Get the state machine's initial state
 var id = sm.get_initial_state()
+```
 
-// Get current state
+### State Machine Current State
+
+```gdscript
+// Set the state machine's current state. This really should be called internally by the state machine only.
+sm.set_current_state("patrol")
+
+// Get the state machine's current state
 var state = sm.get_state(sm.get_current_state())
+```
 
+### State Machine Transition
+
+The transition method of the state machine will validate that the id passed is a valid state. It will call the current state's `_on_leave_state` callback if implemented. It will then call the to state's `_on_enter_state` method.
+
+```gdscript
 // Transition to new state
 sm.transition("patrol")
+```
 
+### State Machine Callbacks
+
+The state manager exposes callback methods for `_process(delta)`, `_fixed_process(delta)`, and `_input(event)`. Calls to these methods are proxied down to the current state's method if it has implemented them.
+
+```gdscript
 // State machine callbacks which are proxied down to the current state object
 sm._fixed_process(delta)
 sm._process(delta)
