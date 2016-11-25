@@ -182,7 +182,12 @@ func _fixed_process(delta):
 
 func scan_for_enemy(delta): pass
 
-func move_to_random(delta): pass
+func move_to_random(delta):
+	# some logic to move to a random location
+	...
+
+	# Transition to idle state if we have reached our destination
+	if arrived_at_location(): state_machine.transition("idle")
 
 func _on_enter_state(): memory = 100
 ```
