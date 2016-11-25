@@ -133,3 +133,56 @@ sm._fixed_process(delta)
 sm._process(delta)
 sm._input(event)
 ```
+
+## State
+
+### State ID
+
+Each state stores its own ID.
+
+```gdscript
+var smf = StateMachineFactory.new()
+var sm = smf.create()
+
+var state = IdleState.new()
+state.set_state_machine(sm)
+state.set_id("idle")
+
+var state_id = state.get_id()
+```
+
+### State Target
+
+The state and state machine have a target object, which is assumed to be where any extra required context is coded against.
+
+```gdscript
+var smf = StateMachineFactory.new()
+var sm = smf.create()
+
+var state = IdleState.new()
+state.set_state_machine(sm)
+state.set_id("idle")
+state.set_target(get_node("player"))
+
+var player = state.get_target()
+```
+
+### State Callbacks
+
+A state class can implement callbacks for `_process(delta)`, `_fixed_process(delta)`, `_input(event)`, `_on_enter_state()`, and `_on_leave_state()`.
+
+```gdscript
+extends "state.gd"
+
+var memory = 0
+
+func _fixed_process(delta):
+	scan_for_enemy(delta)
+	move_to_random(delta)
+
+func scan_for_enemy(delta): pass
+
+func move_to_random(delta): pass
+
+func _on_enter_state(): memory = 100
+```
