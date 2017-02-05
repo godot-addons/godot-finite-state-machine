@@ -21,7 +21,7 @@ var smf = StateMachineFactory.new()
 # Create state machine using a configuration dictionary
 var sm = smf.create({
   "target": get_tree().get_root().get_node("enemy"),
-  "initial_state": "patrol",
+  "current_state": "patrol",
   "states": [
     {"id": "idle", "state": IdleState},
     {"id": "patrol", "state": PatrolState}
@@ -79,7 +79,7 @@ sm.set_transitions([
 sm.set_target(get_tree().get_root().get_node("enemy"))
 
 # Set the initial state of the state machine
-sm.set_initial_state("patrol")
+sm.set_current_state("patrol")
 ```
 
 ## State Machine
@@ -98,10 +98,10 @@ var player = sm.get_target()
 
 ```gdscript
 # Set the state machine's initial state
-sm.set_initial_state("sleeping")
+sm.set_current_state("sleeping")
 
 # Get the state machine's initial state
-var id = sm.get_initial_state()
+var id = sm.get_current_state()
 ```
 
 ### State Machine Current State
