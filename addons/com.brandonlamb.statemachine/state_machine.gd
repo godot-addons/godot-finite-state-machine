@@ -160,7 +160,7 @@ func _fixed_process(delta):
 	"""
 	if _current_state.has_method("_fixed_process"): _current_state._fixed_process(delta)
 
-func _input(delta):
+func _input(event):
 	"""
 	Callback to handle _input(). Must be called manually by code
 	"""
