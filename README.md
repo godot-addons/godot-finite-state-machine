@@ -75,6 +75,10 @@ sm.set_transitions([
   {"state_id": "patrol", "to_states": ["idle"]}
 ])
 
+# Add a single transition
+sm.add_transition("idle", "patrol")
+sm.add_transition("patrol", "idle")
+
 # Add the target node/object to the state machine
 sm.set_target(get_tree().get_root().get_node("enemy"))
 
@@ -92,16 +96,6 @@ sm.set_target(get_node("player"))
 
 # Get state machine's target object
 var player = sm.get_target()
-```
-
-### State Machine Initial State
-
-```gdscript
-# Set the state machine's initial state
-sm.set_current_state("sleeping")
-
-# Get the state machine's initial state
-var id = sm.get_current_state()
 ```
 
 ### State Machine Current State
