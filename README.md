@@ -12,8 +12,8 @@ This first example is the "best" way to create an FSM instance, by passing a con
 Notice the states property is an array of dictionaries, and we pass IdleState and PatrolState. The state machine handles creating new instances of the states via this method.
 
 ```gdscript
-const IdleState = preload("IdleState.gd")
-const PatrolState = preload("PatrolState.gd")
+const IdleState = preload("idle_state.gd")
+const PatrolState = preload("patrol_state.gd")
 
 # Create new state machine factory
 var smf = StateMachineFactory.new()
@@ -38,8 +38,8 @@ var sm = smf.create({
 This method shows how to manually create and setup a FSM object.
 
 ```gdscript
-const IdleState = preload("IdleState.gd")
-const PatrolState = preload("PatrolState.gd")
+const IdleState = preload("idle_state.gd")
+const PatrolState = preload("patrol_state.gd")
 
 # Create state manually
 var sm = smf.create()
