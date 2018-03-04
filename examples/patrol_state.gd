@@ -2,11 +2,12 @@ extends "state.gd"
 
 func _process(delta):
 	# Move target along a path
-	target.move(target.pos.x + 1, target.pos.y + 1)
-	taget.find_enemies()
+	#target.translate(Vector2(target.position.x + 1, target.position.y + 1))
+	#target.find_enemies()
 
-	if target.has_enemies():
-		state_machine.transition("attack")
+#	if target.has_enemies():
+#		state_machine.transition("attack")
+	pass
 
 func _input(event):
 	# Command given to stop patrolling?
@@ -14,8 +15,10 @@ func _input(event):
 
 func _on_enter_state():
 	# Equip weapon
-	target.set_mode("war")
+	#target.set_mode("war")
+	pass
 
 func _on_leave_state():
 	# Unequip weapon
-	target.set_mode("peace")
+	#target.set_mode("peace")
+	pass
