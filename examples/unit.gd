@@ -23,10 +23,10 @@ func _ready():
 			{"state_id": "patrol", "to_states": ["idle", "attack"]},
 			{"state_id": "attack", "to_states": ["idle", "patrol"]}
 		]
-	})
+	}))
 
 	set_process(true)
 	set_process_input(true)
 
 func _process(delta): brain._process(delta)
-func _input(event): brain._input(event)
+func _input(event): brian._input(event)
