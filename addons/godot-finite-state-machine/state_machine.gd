@@ -13,12 +13,12 @@ var current_state = null setget set_current_state, get_current_state
 # Internal current state object
 var _current_state = DefaultState.new()
 
-func set_target(target):
+func set_target(new_target):
 	"""
 	Sets the target object, which could be a node or some other object that the states expect
 	"""
-	self.target = target
-	for s in states: s.set_target(target)
+	target = new_target
+	for s in states: states[s].set_target(target)
 
 func get_target():
 	"""
@@ -80,7 +80,7 @@ func set_state(state_id, state):
 	"""
 	states[state_id] = state
 
-	state.set_id(id)
+	state.set_id(state_id)
 	state.set_state_machine(self)
 
 	if target: state.set_target(target)
@@ -111,7 +111,7 @@ func add_transition(from_state_id, to_state_id):
 	if from_state_id in transitions:
 		transitions[from_state_id].to_states.append(to_state_id)
 	else:
-		transitions[state_id] = {"to_states": [to_state_id]}
+		transitions[from_state_id] = {"to_states": [to_state_id]}
 
 func get_state(state_id):
 	"""
