@@ -154,11 +154,11 @@ func _process(delta):
 	"""
 	if _current_state.has_method("_process"): _current_state._process(delta)
 
-func _fixed_process(delta):
+func _physics_process(delta):
 	"""
-	Callback to handle _fixed_process(). Must be called manually by code
+	Callback to handle _physics_process(). Must be called manually by code
 	"""
-	if _current_state.has_method("_fixed_process"): _current_state._fixed_process(delta)
+	if _current_state.has_method("_physics_process"): _current_state._physics_process(delta)
 
 func _input(event):
 	"""
@@ -187,5 +187,5 @@ class DefaultState extends State:
 	Default state class to implement null object pattern for the state machine's current state
 	"""
 	func _process(delta): print("Unimplemented _process(delta)")
-	func _fixed_process(delta): print("Unimplemented _fixed_process(delta)")
+	func _physics_process(delta): print("Unimplemented _physics_process(delta)")
 	func _input(event): print("Unimplemented _input(event)")
