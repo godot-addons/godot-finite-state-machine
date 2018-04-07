@@ -119,11 +119,11 @@ sm.transition("patrol")
 
 ### State Machine Callbacks
 
-The state manager exposes callback methods for `_process(delta)`, `_fixed_process(delta)`, and `_input(event)`. Calls to these methods are proxied down to the current state's method if it has implemented them.
+The state manager exposes callback methods for `_process(delta)`, `_physics_process(delta)`, and `_input(event)`. Calls to these methods are proxied down to the current state's method if it has implemented them.
 
 ```gdscript
 # State machine callbacks which are proxied down to the current state object
-sm._fixed_process(delta)
+sm._physics_process(delta)
 sm._process(delta)
 sm._input(event)
 ```
@@ -163,14 +163,14 @@ var player = state.get_target()
 
 ### State Callbacks
 
-A state class can implement callbacks for `_process(delta)`, `_fixed_process(delta)`, `_input(event)`, `_on_enter_state()`, and `_on_leave_state()`.
+A state class can implement callbacks for `_process(delta)`, `_physics_process(delta)`, `_input(event)`, `_on_enter_state()`, and `_on_leave_state()`.
 
 ```gdscript
 extends "state.gd"
 
 var memory = 0
 
-func _fixed_process(delta):
+func _physics_process(delta):
 	scan_for_enemy(delta)
 	move_to_random(delta)
 
