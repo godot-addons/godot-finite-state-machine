@@ -1,0 +1,7 @@
+config_version=3
+[application]
+config/name="FSM bandit example"
+run/main_scene="res://example/World.tscn"
+config/icon="res://example/assets/bandit.png"
+[rendering]
+environment/default_environment="res://example/default_env.tres"

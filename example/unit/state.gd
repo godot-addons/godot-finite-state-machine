@@ -12,10 +12,10 @@ func set_id(new_id):
 
 func set_state_machine(new_state_machine):
 	state_machine = new_state_machine
-	
+
 func set_target(new_target):
 	target = new_target
-	
+
 # State machine callback called during transition when entering this state
 func _on_enter_state(): pass
 

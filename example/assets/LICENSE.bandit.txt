@@ -1,0 +1,8 @@
+************************************************************************
+*
+* Author: Delapouite @ delapouite.com
+* Modifications: Made background circular
+* Asset: https://game-icons.net/delapouite/originals/bandit.html
+* License: https://creativecommons.org/licenses/by/3.0/legalcode
+*
+************************************************************************
