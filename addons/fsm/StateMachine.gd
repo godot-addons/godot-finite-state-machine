@@ -94,7 +94,8 @@ func set_state(state_id: String, state: State) -> void:
 	state.id = state_id
 	state.state_machine = self
 
-	if target: state.set_target(target)
+	if target:
+		state.set_target(target)
 
 func set_transition(state_id: String, to_states: Array) -> void:
 	"""
