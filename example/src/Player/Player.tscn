@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://example/src/Player/Player.gd" type="Script" id=1]
+[ext_resource path="res://example/assets/bandit.png" type="Texture" id=2]
+
+[sub_resource type="CircleShape2D" id=1]
+radius = 7.11056
+
+[node name="Player" type="Area2D"]
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="Sprite" type="Sprite" parent="."]
+modulate = Color( 0.271741, 0.832031, 0.224258, 1 )
+scale = Vector2( 0.4, 0.4 )
+texture = ExtResource( 2 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2( 4, 4 )
+shape = SubResource( 1 )
