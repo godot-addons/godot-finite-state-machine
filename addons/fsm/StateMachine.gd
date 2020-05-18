@@ -197,38 +197,25 @@ class State extends Resource:
 	# Reference to state machine
 	var state_machine: StateMachine
 
-	var process_enabled: bool = false
-	var physics_process_enabled: bool = false
-	var input_enabled: bool = false
-	var enter_state_enabled: bool = false
-	var leave_state_enabled: bool = false
-
-	func _init(
-		_process_enabled: bool = false,
-		_physics_process_enabled: bool = false,
-		_input_enabled: bool = false,
-		_enter_state_enabled: bool = false,
-		_leave_state_enabled: bool = false
-	):
-		process_enabled = _process_enabled
-		_physics_process_enabled = _physics_process_enabled
-		input_enabled = _input_enabled
-		enter_state_enabled = _enter_state_enabled
-		leave_state_enabled = _leave_state_enabled
+	var process_enabled: bool = true
+	var physics_process_enabled: bool = true
+	var input_enabled: bool = true
+	var enter_state_enabled: bool = true
+	var leave_state_enabled: bool = true
 
 	# State machine callback called during transition when entering this state
 	func _on_enter_state() -> void:
-		pass
+		push_warning("Unimplemented _on_enter_state")
 
 	# State machine callback called during transition when leaving this state
 	func _on_leave_state() -> void:
-		pass
+		push_warning("Unimplemented _on_leave_state")
 
 	func _process(delta: float) -> void:
-		print("Unimplemented _process(delta)")
+		push_warning("Unimplemented _process(delta)")
 
 	func _physics_process(delta: float) -> void:
-		print("Unimplemented _physics_process(delta)")
+		push_warning("Unimplemented _physics_process(delta)")
 
 	func _input(event: InputEvent) -> void:
-		print("Unimplemented _input(event)")
+		push_warning("Unimplemented _input(event)")

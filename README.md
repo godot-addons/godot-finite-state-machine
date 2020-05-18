@@ -182,7 +182,9 @@ extends "res://addons/fsm/StateMachine.gd".State
 var memory = 0
 
 func _init().():
-  physics_process_enabled = true
+	process_enabled = false
+	input_enabled = false
+	leave_state_enabled = false
 
 func _physics_process(delta: float) -> void:
 	scan_for_enemy(delta)
