@@ -10,7 +10,10 @@ const PATROL_MIN_Y: float = 200.0
 var _patrol_direction = Vector2(1, 1)
 
 func _init().():
-	process_enabled = true
+	physics_process_enabled = false
+	input_enabled = false
+	enter_state_enabled = false
+	leave_state_enabled = false
 
 func _process(_delta: float) -> void:
 	check_for_new_patrol_direction()
