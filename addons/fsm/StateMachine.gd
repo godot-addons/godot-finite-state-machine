@@ -152,6 +152,9 @@ func transition(state_id: String) -> void:
 	Transition to new state by state id.
 	Callbacks will be called on the from and to states if the states have implemented them.
 	"""
+	if not transitions.has(current_state):
+		print("No transitions defined for state %s" % current_state)
+		return
 	if !state_id in states || !state_id in transitions[current_state].to_states:
 		print("Invalid transition from %s" % current_state, " to %s" % state_id)
 		return
