@@ -164,10 +164,10 @@ func transition(state_id: String) -> void:
 
 	if from_state.leave_state_enabled:
 		from_state._on_leave_state()
-	if to_state.enter_state_enabled:
-		to_state._on_enter_state()
 
 	set_current_state(state_id)
+	if to_state.enter_state_enabled:
+		to_state._on_enter_state()
 
 func _process(delta: float) -> void:
 	"""
