@@ -166,6 +166,7 @@ func transition(state_id: String) -> void:
 		from_state._on_leave_state()
 
 	set_current_state(state_id)
+
 	if to_state.enter_state_enabled:
 		to_state._on_enter_state()
 
