@@ -2,7 +2,7 @@ extends Node2D
 
 class_name Enemy
 
-const StateMachineFactory = preload("res://addons/fsm/StateMachineFactory.gd")
+const StateMachineFactory = preload("res://addons/fsm/state_machine_factory.gd")
 const IdleState = preload("IdleState.gd")
 const PatrolState = preload("PatrolState.gd")
 const AttackState = preload("AttackState.gd")
@@ -45,10 +45,10 @@ func _ready() -> void:
 
 # This is required so that our FSM can handle updates
 func _input(event: InputEvent) -> void:
-	state_machine._input(event)
+	state_machine.__input(event)
 
 func _process(delta: float) -> void:
-	state_machine._process(delta)
+	state_machine.__process(delta)
 
 func distance_from_player() -> float:
 	"""

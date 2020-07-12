@@ -2,7 +2,7 @@ extends Resource
 
 class_name StateMachineFactory
 
-const StateMachine = preload("StateMachine.gd")
+const StateMachine = preload("state_machine.gd")
 
 func create(config: Dictionary = {}) -> StateMachine:
 	"""
@@ -22,6 +22,6 @@ func create(config: Dictionary = {}) -> StateMachine:
 	if "current_state" in config:
 		sm.set_current_state(config.current_state)
 
-	sm.set_current_state(sm.current_state)
+	sm.set_current_state(sm.m_current_state_id)
 
 	return sm

@@ -3,16 +3,16 @@ extends "ProxyState.gd"
 class_name IdleState
 
 func _init().():
-	physics_process_enabled = false
-	input_enabled = false
+	m_physics_process_enabled = false
+	m_input_enabled = false
 
-func _process(_delta: float) -> void:
+func __process(_delta: float) -> void:
 	# Start patrolling when the player gets closer to us
-	if target.should_patrol():
-		state_machine.transition("patrol")
+	if m_target.should_patrol():
+		m_state_machine.transition("patrol")
 
-func _on_enter_state() -> void:
-	target.say("I feel at peace.")
+func __on_enter_state() -> void:
+	m_target.say("I feel at peace.")
 
-func _on_leave_state() -> void:
-	target.say("I feel uneasy...")
+func __on_exit_state() -> void:
+	m_target.say("I feel uneasy...")

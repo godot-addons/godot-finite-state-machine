@@ -42,12 +42,12 @@ _global_script_classes=[ {
 "base": "Resource",
 "class": "StateMachine",
 "language": "GDScript",
-"path": "res://addons/fsm/StateMachine.gd"
+"path": "res://addons/fsm/state_machine.gd"
 }, {
 "base": "Resource",
 "class": "StateMachineFactory",
 "language": "GDScript",
-"path": "res://addons/fsm/StateMachineFactory.gd"
+"path": "res://addons/fsm/state_machine_factory.gd"
 } ]
 _global_script_class_icons={
 "AttackState": "",

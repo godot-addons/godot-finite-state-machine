@@ -1,4 +1,4 @@
-extends "res://addons/fsm/StateMachine.gd".State
+extends "res://addons/fsm/state_machine.gd".State
 
 class_name ProxyState
 
