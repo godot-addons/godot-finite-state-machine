@@ -2,10 +2,9 @@ extends Node2D
 
 class_name Enemy
 
-const StateMachineFactory = preload("res://addons/fsm/state_machine_factory.gd")
-const IdleState = preload("IdleState.gd")
-const PatrolState = preload("PatrolState.gd")
-const AttackState = preload("AttackState.gd")
+onready var idle_state : Resource = IdleState.new()
+onready var patrol_state : Resource = PatrolState.new()
+onready var attack_state : Resource = AttackState.new()
 
 const ENEMY_ATTACK_DISTANCE: float = 200.0
 const ENEMY_PATROL_DISTANCE: float = 400.0
@@ -23,9 +22,9 @@ func _ready() -> void:
 		"target": self,
 		"current_state": "idle",
 		"states": [
-			{"id": "idle", "state": IdleState},
-			{"id": "patrol", "state": PatrolState},
-			{"id": "attack", "state": AttackState}
+			{"id": "idle", "state": idle_state},
+			{"id": "patrol", "state": patrol_state},
+			{"id": "attack", "state": attack_state}
 		],
 		"transitions": [
 			{"state_id": "idle", "to_states": ["patrol", "attack"]},

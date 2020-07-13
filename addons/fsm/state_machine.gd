@@ -45,23 +45,19 @@ class_name StateMachine
 
 
 # The state machine's target object, node, etc
-#var target = null setget set_managed_object, get_managed_object
 var m_managed_object_weakref : WeakRef = null # using weakref to avoid memory leaks
 
 # Dictionary of states by state id
-#var states = {} setget set_states, get_states
-var m_states : Dictionary = {}
+var m_states : Dictionary = {} # Holds state id strings and weak references to the State objects
 
 # Dictionary of valid state transitions
-#var transitions = {} setget set_transitions, get_transitions
 var m_transitions : Dictionary = {}
 
 # Reference to current state object
-#var current_state = null setget set_current_state, get_current_state
 var m_current_state_id : String = "" setget set_current_state
 
 # Internal current state object
-var m_current_state : State = null
+var m_current_state_weakref : WeakRef = null
 
 
 func set_managed_object(p_managed_object : Object):
@@ -70,7 +66,7 @@ func set_managed_object(p_managed_object : Object):
 	"""
 	m_managed_object_weakref = weakref(p_managed_object)
 	for s in m_states:
-		m_states[s].m_managed_object_weakref = weakref(p_managed_object)
+		m_states[s].get_ref().m_managed_object_weakref = weakref(p_managed_object)
 
 
 func get_managed_object() -> Object:
@@ -86,7 +82,7 @@ func set_states(p_states : Array) -> void:
 	"""
 	for state_dict in p_states:
 		if state_dict.id && state_dict.state:
-			set_state(state_dict.id, state_dict.state.new())
+			set_state(state_dict.id, state_dict.state)
 
 
 func get_states() -> Dictionary:
@@ -118,7 +114,7 @@ func set_current_state(p_state_id : String) -> void:
 	"""
 	if p_state_id in m_states:
 		m_current_state_id = p_state_id
-		m_current_state = m_states[p_state_id]
+		m_current_state_weakref = m_states[p_state_id]
 	else:
 		print_debug("Cannot set current state, invalid state: ", p_state_id)
 
@@ -146,7 +142,7 @@ func set_state(p_state_id : String, p_state : State) -> void:
 		if p_state_id in m_states:
 			push_warning("Overwriting state: " + p_state_id)
 
-	m_states[p_state_id] = p_state
+	m_states[p_state_id] = weakref(p_state)
 
 	p_state.id = p_state_id
 	p_state.m_state_machine_weakref = weakref(self)
@@ -193,7 +189,7 @@ func get_state(p_state_id: String) -> State:
 	Return the state from the states dictionary by state id if it exists
 	"""
 	if p_state_id in m_states:
-		return m_states[p_state_id]
+		return m_states[p_state_id].get_ref()
 
 	print_debug("Cannot get state, invalid state: ", p_state_id)
 
@@ -240,21 +236,21 @@ func process(p_delta : float) -> void:
 	"""
 	Callback to handle _process(). Must be called manually by code
 	"""
-	if m_current_state.m_process_enabled:
-		m_current_state.__process(p_delta)
+	if m_current_state_weakref.get_ref().m_process_enabled:
+		m_current_state_weakref.get_ref().__process(p_delta)
 
 
 func physics_process(p_delta : float) -> void:
 	"""
 	Callback to handle __physics_process(). Must be called manually by code
 	"""
-	if m_current_state.m_physics_process_enabled:
-		m_current_state.__physics_process(p_delta)
+	if m_current_state_weakref.get_ref().m_physics_process_enabled:
+		m_current_state_weakref.get_ref().__physics_process(p_delta)
 
 
 func input(p_event : InputEvent) -> void:
 	"""
 	Callback to handle _input(). Must be called manually by code
 	"""
-	if m_current_state.m_input_enabled:
-		m_current_state.__input(p_event)
+	if m_current_state_weakref.get_ref().m_input_enabled:
+		m_current_state_weakref.get_ref().__input(p_event)
