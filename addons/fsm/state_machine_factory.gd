@@ -10,7 +10,7 @@ func create(config: Dictionary = {}) -> StateMachine:
 
 	if "states" in config:
 		sm.set_states(config.states)
-	
+
 	if "target" in config:
 		sm.set_managed_object(config.target)
 

@@ -1,6 +1,8 @@
 extends Resource
 
+signal state_pushed(p_pushed_state)
 signal state_transitioned(p_from_state, p_to_state, p_transition_data_dictionary)
+signal state_popped(p_pushed_state)
 """
 Signal to notify the state transition that just occured and what transition data was passed around.
 """
@@ -29,17 +31,16 @@ var m_transitions : Dictionary = {}
 # Reference to current state object
 var m_current_state_id : String = "" setget set_current_state
 
-# Internal current state object
-var m_current_state_weakref : WeakRef = null
-
+# Stack of weak reference to states instances
+var m_states_stack : Array = []
 
 func set_managed_object(p_managed_object : Object):
 	"""
 	Sets the target object, which could be a node or some other object that the states expect
 	"""
 	m_managed_object_weakref = weakref(p_managed_object)
-	for s in m_states:
-		m_states[s].get_ref().m_managed_object_weakref = weakref(p_managed_object)
+	for state_id in m_states:
+		m_states[state_id].m_managed_object_weakref = weakref(p_managed_object)
 
 
 func get_managed_object() -> Object:
@@ -81,13 +82,56 @@ func get_transitions() -> Dictionary:
 	return m_transitions
 
 
+func push(p_state_id : String, p_state : State):
+	"""
+	Guarantees state processing order is not modified
+	"""
+	push_back(p_state_id, p_state)
+
+
+func push_front(p_state_id : String, p_state : State):
+	"""
+	Pushed state will be processed first than the rest
+	"""
+	pass
+
+
+func push_back(p_state_id : String, p_state : State):
+	"""
+	Pushed state will be processed last than the rest
+	"""
+	pass
+
+
+func pop(p_state_id : String, p_state : State):
+	"""
+	Guarantees state processing order is not modified
+	"""
+	pop_back(p_state_id, p_state)
+
+
+func pop_front(p_state_id : String, p_state : State):
+	"""
+	Remove state that is being processed first
+	"""
+	pass
+
+
+func pop_back(p_state_id : String, p_state : State):
+	"""
+	Remove state that is being processed last
+	"""
+	pass
+
+
 func set_current_state(p_state_id : String) -> void:
 	"""
 	This is a 'just do it' method and does not validate transition change
 	"""
 	if p_state_id in m_states:
 		m_current_state_id = p_state_id
-		m_current_state_weakref = m_states[p_state_id]
+		m_states_stack.clear()
+		m_states_stack.push_back(m_states[p_state_id])
 	else:
 		print_debug("Cannot set current state, invalid state: ", p_state_id)
 
@@ -107,7 +151,7 @@ func set_state_machine(p_states : Array) -> void:
 		state.set_state_machine(weakref(self))
 
 
-func set_state(p_state_id : String, p_state : State) -> void:
+func set_state(p_state_id : String, p_state_class : GDScript) -> void:
 	"""
 	Add a state to the states dictionary
 	"""
@@ -115,9 +159,10 @@ func set_state(p_state_id : String, p_state : State) -> void:
 		if p_state_id in m_states:
 			push_warning("Overwriting state: " + p_state_id)
 
-	m_states[p_state_id] = weakref(p_state)
+	var p_state = p_state_class.new()
+	m_states[p_state_id] = p_state
 
-	p_state.id = p_state_id
+	p_state.m_id = p_state_id
 	p_state.m_state_machine_weakref = weakref(self)
 
 	if m_managed_object_weakref:
@@ -138,7 +183,7 @@ func set_transition(p_state_id : String, p_to_states : Array) -> void:
 		print_debug("Cannot set transition, invalid state: ", p_state_id)
 
 
-func add_transition(from_state_id: String, p_to_state_id: String) -> void:
+func add_transition(from_state_id : String, p_to_state_id : String) -> void:
 	"""
 	Add a transition for a state. This adds a single state to transitions whereas
 	set_transition is a full replace.
@@ -157,19 +202,19 @@ func add_transition(from_state_id: String, p_to_state_id: String) -> void:
 		m_transitions[from_state_id] = {"to_states": [p_to_state_id]}
 
 
-func get_state(p_state_id: String) -> State:
+func get_state(p_state_id : String) -> State:
 	"""
 	Return the state from the states dictionary by state id if it exists
 	"""
 	if p_state_id in m_states:
-		return m_states[p_state_id].get_ref()
+		return m_states[p_state_id]
 
 	print_debug("Cannot get state, invalid state: ", p_state_id)
 
 	return null
 
 
-func get_transition(p_state_id: String) -> Dictionary:
+func get_transition(p_state_id : String) -> Dictionary:
 	"""
 	Return the transition from the transitions dictionary by state id if it exists
 	"""
@@ -204,28 +249,31 @@ func transition(p_state_id : String, p_transition_data_dictionary : Dictionary =
 	if to_state.m_enter_state_enabled:
 		to_state.__on_enter_state(p_transition_data_dictionary)
 
-	emit_signal("state_transitioned", from_state.id, to_state.id, p_transition_data_dictionary)
+	emit_signal("state_transitioned", from_state.m_id, to_state.m_id, p_transition_data_dictionary)
 
 
 func process(p_delta : float) -> void:
 	"""
 	Callback to handle _process(). Must be called manually by code
 	"""
-	if m_current_state_weakref.get_ref().m_process_enabled:
-		m_current_state_weakref.get_ref().__process(p_delta)
+	for state in m_states_stack:
+		if state.m_process_enabled:
+			state.__process(p_delta)
 
 
 func physics_process(p_delta : float) -> void:
 	"""
 	Callback to handle _physics_process(). Must be called manually by code
 	"""
-	if m_current_state_weakref.get_ref().m_physics_process_enabled:
-		m_current_state_weakref.get_ref().__physics_process(p_delta)
+	for state in m_states_stack:
+		if state.m_physics_process_enabled:
+			state.__physics_process(p_delta)
 
 
 func input(p_event : InputEvent) -> void:
 	"""
 	Callback to handle _input(). Must be called manually by code
 	"""
-	if m_current_state_weakref.get_ref().m_input_enabled:
-		m_current_state_weakref.get_ref().__input(p_event)
+	for state in m_states_stack:
+		if state.m_input_enabled:
+			state.__input(p_event)

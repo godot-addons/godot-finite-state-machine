@@ -10,12 +10,12 @@ Usage Notes:
 """
 
 # State ID
-var id : String
+var m_id : String
 
 # WeakRef to object we want to manage the state of (object, node, etc)
 var m_managed_object_weakref : WeakRef = null # using weakref to avoid memory leaks
 
-# Reference to state machine
+# WeakRef to state machine
 var m_state_machine_weakref : WeakRef = null # using weakref to avoid memory leaks
 
 # Internal State Variables trigger processing
