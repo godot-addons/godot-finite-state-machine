@@ -39,7 +39,7 @@ class State extends Resource:
 class_name StateMachine
 
 # The state machine's target object, node, etc
-#var target = null setget set_target, get_target
+#var target = null setget set_managed_object, get_managed_object
 var m_managed_object_weakref : WeakRef = null # using weakref to avoid memory leaks
 
 # Dictionary of states by state id
@@ -52,23 +52,24 @@ var m_transitions : Dictionary = {}
 
 # Reference to current state object
 #var current_state = null setget set_current_state, get_current_state
-var m_current_state_id = null setget set_current_state
+var m_current_state_id : String = "" setget set_current_state
 
 # Internal current state object
-var m_current_state = State.new()
+var m_current_state : State = null
 
-func set_target(p_new_target : Object):
+func set_managed_object(p_managed_object : Object):
 	"""
 	Sets the target object, which could be a node or some other object that the states expect
 	"""
+	m_managed_object_weakref = weakref(p_managed_object)
 	for s in m_states:
-		m_states[s].m_managed_object_weakref = weakref(p_new_target)
+		m_states[s].m_managed_object_weakref = weakref(p_managed_object)
 
-func get_target() -> WeakRef:
+func get_managed_object() -> Object:
 	"""
 	Returns the target object (node, object, etc)
 	"""
-	return m_managed_object_weakref
+	return m_managed_object_weakref.get_ref()
 
 func set_states(p_states : Array) -> void:
 	"""
@@ -108,7 +109,7 @@ func set_current_state(p_state_id : String) -> void:
 	else:
 		print_debug("Cannot set current state, invalid state: ", p_state_id)
 
-func get_current_state() -> State:
+func get_current_state_id() -> String:
 	"""
 	Returns the string id of the current state
 	"""
@@ -119,7 +120,7 @@ func set_state_machine(p_states : Array) -> void:
 	Expects an array of states to iterate over and pass self to the state's set_machine_state() method
 	"""
 	for state in p_states:
-		state.set_state_machine(self)
+		state.set_state_machine(weakref(self))
 
 func set_state(p_state_id : String, p_state : State) -> void:
 	"""
@@ -131,7 +132,7 @@ func set_state(p_state_id : String, p_state : State) -> void:
 	p_state.m_state_machine_weakref = weakref(self)
 
 	if m_managed_object_weakref:
-		p_state.set_target(m_managed_object_weakref)
+		p_state.set_managed_object(m_managed_object_weakref)
 
 func set_transition(p_state_id: String, p_to_states: Array) -> void:
 	"""

@@ -14,7 +14,7 @@ func create(config: Dictionary = {}) -> StateMachine:
 		sm.set_states(config.states)
 
 	if "target" in config:
-		sm.set_target(config.target)
+		sm.set_managed_object(config.target)
 
 	if "transitions" in config:
 		sm.set_transitions(config.transitions)
