@@ -7,14 +7,14 @@ func _init().():
 	m_input_enabled = false
 
 func __process(_delta: float) -> void:
-	if not m_target.has_enemies():
-		m_state_machine.transition("patrol")
+	if not m_managed_object_weakref.get_ref().has_enemies():
+		m_state_machine_weakref.get_ref().transition("patrol")
 		return
 
-	m_target.attack_enemies()
+	m_managed_object_weakref.get_ref().attack_enemies()
 
 func __on_enter_state() -> void:
-	m_target.say("Detected player")
+	m_managed_object_weakref.get_ref().say("Detected player")
 
 func __on_exit_state() -> void:
-	m_target.say("Lost track of player")
+	m_managed_object_weakref.get_ref().say("Lost track of player")

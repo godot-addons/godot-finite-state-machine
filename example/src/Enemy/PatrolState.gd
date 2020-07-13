@@ -19,15 +19,15 @@ func __process(_delta: float) -> void:
 	check_for_new_patrol_direction()
 
 	# Move target along a path
-	m_target.position += _patrol_direction
+	m_managed_object_weakref.get_ref().position += _patrol_direction
 
 	# We're close to the target, let's attack them
-	if m_target.has_enemies():
-		m_state_machine.transition("attack")
+	if m_managed_object_weakref.get_ref().has_enemies():
+		m_state_machine_weakref.get_ref().transition("attack")
 
 	# We're far from the player, stop patrolling
-	elif not m_target.should_patrol():
-		m_state_machine.transition("idle")
+	elif not m_managed_object_weakref.get_ref().should_patrol():
+		m_state_machine_weakref.get_ref().transition("idle")
 
 func check_for_new_patrol_direction() -> void:
 	"""
@@ -36,7 +36,7 @@ func check_for_new_patrol_direction() -> void:
 
 	If the unit is outside bounds, reverse it's walking direction for that axis
 	"""
-	var position = m_target.position
+	var position = m_managed_object_weakref.get_ref().position
 
 	# We've gone too far left or right
 	if position.x > PATROL_MAX_X or position.x < PATROL_MIN_X:
