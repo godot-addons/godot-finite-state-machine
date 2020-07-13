@@ -23,7 +23,8 @@ Usage Notes:
 var m_managed_object_weakref : WeakRef = null # using weakref to avoid memory leaks
 
 # Dictionary of states by state id
-var m_states : Dictionary = {} # Holds state id strings and weak references to the State objects
+var m_states : Dictionary = {} # Holds state id strings and state instances currently in use
+var m_state_classes : Dictionary = {} # Holds a reference to each GDScript state class
 
 # Dictionary of valid state transitions
 var m_transitions : Dictionary = {}
@@ -32,6 +33,7 @@ var m_transitions : Dictionary = {}
 var m_current_state_id : String = "" setget set_current_state
 
 # Stack of weak reference to states instances
+# Transitions only happen between elements at stack position 0
 var m_states_stack : Array = []
 
 func set_managed_object(p_managed_object : Object):
@@ -56,7 +58,8 @@ func set_states(p_states : Array) -> void:
 	"""
 	for state_dict in p_states:
 		if state_dict.id && state_dict.state:
-			set_state(state_dict.id, state_dict.state)
+			m_state_classes[state_dict.id] = state_dict.state
+			set_state(state_dict.id, state_dict.state.new())
 
 
 func get_states() -> Dictionary:
@@ -82,58 +85,69 @@ func get_transitions() -> Dictionary:
 	return m_transitions
 
 
-func push(p_state_id : String, p_state : State):
+func push(p_state_id : String, p_transition_data_dictionary : Dictionary = {}) -> void:
 	"""
 	Guarantees state processing order is not modified
+	Pushed state will be processed last than the rest
 	"""
-	push_back(p_state_id, p_state)
+	if p_state_id in m_states:
+		var p_state : State = m_state_classes[p_state_id].new()
+		__initialize_state(p_state)
+		if p_state.m_enter_state_enabled:
+			p_state.__on_enter_state(p_transition_data_dictionary)
+		m_states_stack.push_back(p_state)
+	else:
+		push_warning("Cannot push invalid state to the back of the stack: " + p_state_id)
 
 
-func push_front(p_state_id : String, p_state : State):
+func push_front(p_state_id : String, p_transition_data_dictionary : Dictionary = {}) -> void:
 	"""
 	Pushed state will be processed first than the rest
 	"""
-	pass
+	if p_state_id in m_states:
+		var p_state : State = m_state_classes[p_state_id].new()
+		__initialize_state(p_state)
+		if p_state.m_enter_state_enabled:
+			p_state.__on_enter_state(p_transition_data_dictionary)
+		m_states_stack.push_front(p_state)
+	else:
+		push_warning("Cannot push invalid state to the front of the stack: " + p_state_id)
 
 
-func push_back(p_state_id : String, p_state : State):
-	"""
-	Pushed state will be processed last than the rest
-	"""
-	pass
-
-
-func pop(p_state_id : String, p_state : State):
+func pop() -> void:
 	"""
 	Guarantees state processing order is not modified
+	Removes the state that is being processed last
 	"""
-	pop_back(p_state_id, p_state)
+	if len(m_states_stack) == 1:
+		push_warning("Could not pop state from the stack -- there's is only one element: " + m_states_stack[0].m_id)
+		return
+
+	var p_state : State = m_states_stack.pop_back()
+	if p_state.m_exit_state_enabled:
+		p_state.__on_exit_state()
+	else:
+		push_warning("Could not pop state " + str(p_state) + " with id \"" + p_state.m_id +"\"")
 
 
-func pop_front(p_state_id : String, p_state : State):
+func pop_state(p_state : State):
+	"""
+	Removes a specific state from the stack if found
+	"""
+	if p_state in m_states_stack:
+		m_states_stack.erase(p_state)
+		if p_state.m_exit_state_enabled:
+			p_state.__on_exit_state()
+	else:
+		push_warning("Could not pop state " + str(p_state) + " with id \"" + p_state.m_id +"\"")
+
+func pop_front() -> void:
 	"""
 	Remove state that is being processed first
 	"""
-	pass
-
-
-func pop_back(p_state_id : String, p_state : State):
-	"""
-	Remove state that is being processed last
-	"""
-	pass
-
-
-func set_current_state(p_state_id : String) -> void:
-	"""
-	This is a 'just do it' method and does not validate transition change
-	"""
-	if p_state_id in m_states:
-		m_current_state_id = p_state_id
-		m_states_stack.clear()
-		m_states_stack.push_back(m_states[p_state_id])
-	else:
-		print_debug("Cannot set current state, invalid state: ", p_state_id)
+	var p_state : State = m_states_stack.pop_front()
+	if p_state.m_exit_state_enabled:
+		p_state.__on_exit_state()
 
 
 func get_current_state_id() -> String:
@@ -151,7 +165,7 @@ func set_state_machine(p_states : Array) -> void:
 		state.set_state_machine(weakref(self))
 
 
-func set_state(p_state_id : String, p_state_class : GDScript) -> void:
+func set_state(p_state_id : String, p_state : State) -> void:
 	"""
 	Add a state to the states dictionary
 	"""
@@ -159,7 +173,6 @@ func set_state(p_state_id : String, p_state_class : GDScript) -> void:
 		if p_state_id in m_states:
 			push_warning("Overwriting state: " + p_state_id)
 
-	var p_state = p_state_class.new()
 	m_states[p_state_id] = p_state
 
 	p_state.m_id = p_state_id
@@ -180,7 +193,7 @@ func set_transition(p_state_id : String, p_to_states : Array) -> void:
 				push_warning("Overwriting transition for state: " + p_state_id)
 		m_transitions[p_state_id] = {"to_states" : p_to_states}
 	else:
-		print_debug("Cannot set transition, invalid state: ", p_state_id)
+		push_warning("Cannot set transition, invalid state: " + p_state_id)
 
 
 func add_transition(from_state_id : String, p_to_state_id : String) -> void:
@@ -189,10 +202,10 @@ func add_transition(from_state_id : String, p_to_state_id : String) -> void:
 	set_transition is a full replace.
 	"""
 	if !from_state_id in m_states || !p_to_state_id in m_states:
-		print_debug(
-			"Cannot add transition, invalid state(s): ",
-			"from_state_id=", from_state_id,
-			", p_to_state_id=", p_to_state_id
+		push_warning(
+			"Cannot add transition, invalid state(s): " +
+			"from_state_id=" + from_state_id +
+			", p_to_state_id=" +  p_to_state_id
 		)
 		return
 
@@ -209,7 +222,7 @@ func get_state(p_state_id : String) -> State:
 	if p_state_id in m_states:
 		return m_states[p_state_id]
 
-	print_debug("Cannot get state, invalid state: ", p_state_id)
+	push_warning("Cannot get state, invalid state: " + p_state_id)
 
 	return null
 
@@ -221,9 +234,23 @@ func get_transition(p_state_id : String) -> Dictionary:
 	if p_state_id in m_transitions:
 		return m_transitions[p_state_id]
 
-	print_debug("ERROR: Cannot get transition, invalid state: ", p_state_id)
+	push_error("ERROR: Cannot get transition, invalid state: " + p_state_id)
 
 	return {}
+
+func set_current_state(p_state_id : String) -> void:
+	"""
+	This is a 'just do it' method and does not validate transition change
+	"""
+	if p_state_id in m_states:
+		m_current_state_id = p_state_id
+		if len(m_states_stack) == 0:
+			m_states_stack.append(m_states[p_state_id])
+		else:
+			m_states_stack[0] = m_states[p_state_id]
+	else:
+		push_warning("Cannot set current state, invalid state: " + p_state_id)
+
 
 
 func transition(p_state_id : String, p_transition_data_dictionary : Dictionary = {}) -> void:
@@ -232,10 +259,10 @@ func transition(p_state_id : String, p_transition_data_dictionary : Dictionary =
 	Callbacks will be called on the from and to states if the states have implemented them.
 	"""
 	if not m_transitions.has(m_current_state_id):
-		print_debug("No transitions defined for state %s" % m_current_state_id)
+		push_warning("No transitions defined for state %s" % m_current_state_id)
 		return
 	if !p_state_id in m_states || !p_state_id in m_transitions[m_current_state_id].to_states:
-		print_debug("Invalid transition from %s" % m_current_state_id, " to %s" % p_state_id)
+		push_warning("Invalid transition from %s" % m_current_state_id + " to %s" % p_state_id)
 		return
 
 	var from_state : State = get_state(m_current_state_id)
@@ -277,3 +304,8 @@ func input(p_event : InputEvent) -> void:
 	for state in m_states_stack:
 		if state.m_input_enabled:
 			state.__input(p_event)
+
+func __initialize_state(p_state : State) -> void:
+	p_state.m_state_machine_weakref = weakref(self)
+	if m_managed_object_weakref:
+		p_state.m_managed_object_weakref = m_managed_object_weakref

@@ -20,7 +20,8 @@ func _ready() -> void:
 		"states": [
 			{"id": "idle", "state": IdleState},
 			{"id": "patrol", "state": PatrolState},
-			{"id": "attack", "state": AttackState}
+			{"id": "attack", "state": AttackState},
+			{"id": "powerup", "state": PowerUpState},
 		],
 		"transitions": [
 			{"state_id": "idle", "to_states": ["patrol", "attack"]},
