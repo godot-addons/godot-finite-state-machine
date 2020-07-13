@@ -9,7 +9,7 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "",
+"base": "State",
 "class": "AttackState",
 "language": "GDScript",
 "path": "res://example/src/Enemy/AttackState.gd"
@@ -19,12 +19,12 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://example/src/Enemy/Enemy.gd"
 }, {
-"base": "",
+"base": "State",
 "class": "IdleState",
 "language": "GDScript",
 "path": "res://example/src/Enemy/IdleState.gd"
 }, {
-"base": "",
+"base": "State",
 "class": "PatrolState",
 "language": "GDScript",
 "path": "res://example/src/Enemy/PatrolState.gd"
@@ -35,9 +35,9 @@ _global_script_classes=[ {
 "path": "res://example/src/Player/Player.gd"
 }, {
 "base": "Resource",
-"class": "ProxyState",
+"class": "State",
 "language": "GDScript",
-"path": "res://example/src/Enemy/ProxyState.gd"
+"path": "res://addons/fsm/state.gd"
 }, {
 "base": "Resource",
 "class": "StateMachine",
@@ -55,7 +55,7 @@ _global_script_class_icons={
 "IdleState": "",
 "PatrolState": "",
 "Player": "",
-"ProxyState": "",
+"State": "",
 "StateMachine": "",
 "StateMachineFactory": ""
 }

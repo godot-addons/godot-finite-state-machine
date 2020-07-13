@@ -10,7 +10,7 @@ const ENEMY_ATTACK_DISTANCE: float = 200.0
 const ENEMY_PATROL_DISTANCE: float = 400.0
 
 var last_shot_time: int = 0
-var state_machine: StateMachine
+var state_machine : StateMachine
 
 onready var smf = StateMachineFactory.new()
 onready var player = $"/root/World/Player"

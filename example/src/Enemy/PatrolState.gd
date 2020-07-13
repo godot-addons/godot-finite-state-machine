@@ -1,4 +1,4 @@
-extends "ProxyState.gd"
+extends State
 
 class_name PatrolState
 
