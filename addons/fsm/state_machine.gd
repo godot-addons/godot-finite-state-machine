@@ -1,5 +1,10 @@
 extends Resource
 
+signal state_transitioned(p_from_state, p_to_state, p_transition_data_dictionary)
+"""
+Signal to notify the state transition that just occured and what transition data was passed around.
+"""
+
 class_name StateMachine
 """
 StateMachine class to manage states -- can be used concurrently.
@@ -78,7 +83,7 @@ func get_transitions() -> Dictionary:
 
 func set_current_state(p_state_id : String) -> void:
 	"""
-	This is a "just do it" method and does not validate transition change
+	This is a 'just do it' method and does not validate transition change
 	"""
 	if p_state_id in m_states:
 		m_current_state_id = p_state_id
@@ -176,7 +181,7 @@ func get_transition(p_state_id: String) -> Dictionary:
 	return {}
 
 
-func transition(p_state_id : String) -> void:
+func transition(p_state_id : String, p_transition_data_dictionary : Dictionary = {}) -> void:
 	"""
 	Transition to new state by state id.
 	Callbacks will be called on the from and to states if the states have implemented them.
@@ -197,7 +202,9 @@ func transition(p_state_id : String) -> void:
 	set_current_state(p_state_id)
 
 	if to_state.m_enter_state_enabled:
-		to_state.__on_enter_state()
+		to_state.__on_enter_state(p_transition_data_dictionary)
+
+	emit_signal("state_transitioned", from_state.id, to_state.id, p_transition_data_dictionary)
 
 
 func process(p_delta : float) -> void:
@@ -210,7 +217,7 @@ func process(p_delta : float) -> void:
 
 func physics_process(p_delta : float) -> void:
 	"""
-	Callback to handle __physics_process(). Must be called manually by code
+	Callback to handle _physics_process(). Must be called manually by code
 	"""
 	if m_current_state_weakref.get_ref().m_physics_process_enabled:
 		m_current_state_weakref.get_ref().__physics_process(p_delta)

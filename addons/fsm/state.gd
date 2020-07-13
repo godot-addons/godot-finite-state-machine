@@ -27,7 +27,7 @@ var m_exit_state_enabled : bool = true
 
 
 # State machine callback called during transition when entering this state
-func __on_enter_state() -> void:
+func __on_enter_state(p_transition_data_dictionary : Dictionary = {}) -> void:
 	push_warning("Unimplemented __on_enter_state")
 
 

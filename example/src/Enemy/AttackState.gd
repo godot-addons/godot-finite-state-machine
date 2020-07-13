@@ -13,7 +13,7 @@ func __process(_delta: float) -> void:
 
 	m_managed_object_weakref.get_ref().attack_enemies()
 
-func __on_enter_state() -> void:
+func __on_enter_state(_p_transition_dictionary : Dictionary = {}) -> void:
 	m_managed_object_weakref.get_ref().say("Detected player")
 
 func __on_exit_state() -> void:
