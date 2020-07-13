@@ -2,8 +2,6 @@ extends Resource
 
 class_name StateMachineFactory
 
-const StateMachine = preload("state_machine.gd")
-
 func create(config: Dictionary = {}) -> StateMachine:
 	"""
 	Factory method accepting an optional configuration object
