@@ -23,15 +23,19 @@ class State extends Resource:
 	func __on_enter_state() -> void:
 		push_warning("Unimplemented __on_enter_state")
 
+
 	# State machine callback called during transition when leaving this state
 	func __on_exit_state() -> void:
 		push_warning("Unimplemented __on_exit_state")
 
+
 	func __process(delta: float) -> void:
 		push_warning("Unimplemented __process(delta)")
 
+
 	func __physics_process(delta: float) -> void:
 		push_warning("Unimplemented __physics_process(delta)")
+
 
 	func __input(event: InputEvent) -> void:
 		push_warning("Unimplemented __input(event)")
@@ -44,21 +48,17 @@ class_name StateMachine
 #var target = null setget set_managed_object, get_managed_object
 var m_managed_object_weakref : WeakRef = null # using weakref to avoid memory leaks
 
-
 # Dictionary of states by state id
 #var states = {} setget set_states, get_states
 var m_states : Dictionary = {}
-
 
 # Dictionary of valid state transitions
 #var transitions = {} setget set_transitions, get_transitions
 var m_transitions : Dictionary = {}
 
-
 # Reference to current state object
 #var current_state = null setget set_current_state, get_current_state
 var m_current_state_id : String = "" setget set_current_state
-
 
 # Internal current state object
 var m_current_state : State = null
@@ -84,9 +84,9 @@ func set_states(p_states : Array) -> void:
 	"""
 	Expects an array of state definitions to generate the dictionary of states
 	"""
-	for s in p_states:
-		if s.id && s.state:
-			set_state(s.id, s.state.new())
+	for state_dict in p_states:
+		if state_dict.id && state_dict.state:
+			set_state(state_dict.id, state_dict.state.new())
 
 
 func get_states() -> Dictionary:
@@ -100,9 +100,9 @@ func set_transitions(p_transitions : Array) -> void:
 	"""
 	Expects an array of transition definitions to generate the dictionary of transitions
 	"""
-	for t in p_transitions:
-		if t.state_id && t.to_states:
-			set_transition(t.state_id, t.to_states)
+	for transition_dict in p_transitions:
+		if transition_dict.state_id && transition_dict.to_states:
+			set_transition(transition_dict.state_id, transition_dict.to_states)
 
 
 func get_transitions() -> Dictionary:
@@ -142,6 +142,10 @@ func set_state(p_state_id : String, p_state : State) -> void:
 	"""
 	Add a state to the states dictionary
 	"""
+	if OS.is_debug_build(): # warn when a state gets overwritten
+		if p_state_id in m_states:
+			push_warning("Overwriting state: " + p_state_id)
+
 	m_states[p_state_id] = p_state
 
 	p_state.id = p_state_id
@@ -151,13 +155,16 @@ func set_state(p_state_id : String, p_state : State) -> void:
 		p_state.set_managed_object(m_managed_object_weakref)
 
 
-func set_transition(p_state_id: String, p_to_states: Array) -> void:
+func set_transition(p_state_id : String, p_to_states : Array) -> void:
 	"""
 	Set valid transitions for a state. Expects state id and array of to state ids.
 	If a state id does not exist in states dictionary, the transition will NOT be added.
 	"""
 	if p_state_id in m_states:
-		m_transitions[p_state_id] = {"to_states": p_to_states}
+		if OS.is_debug_build():
+			if p_state_id in m_transitions:
+				push_warning("Overwriting transition for state: " + p_state_id)
+		m_transitions[p_state_id] = {"to_states" : p_to_states}
 	else:
 		print_debug("Cannot set transition, invalid state: ", p_state_id)
 
@@ -205,7 +212,7 @@ func get_transition(p_state_id: String) -> Dictionary:
 	return {}
 
 
-func transition(p_state_id: String) -> void:
+func transition(p_state_id : String) -> void:
 	"""
 	Transition to new state by state id.
 	Callbacks will be called on the from and to states if the states have implemented them.
@@ -229,7 +236,7 @@ func transition(p_state_id: String) -> void:
 		to_state.__on_enter_state()
 
 
-func process(p_delta: float) -> void:
+func process(p_delta : float) -> void:
 	"""
 	Callback to handle _process(). Must be called manually by code
 	"""
@@ -237,7 +244,7 @@ func process(p_delta: float) -> void:
 		m_current_state.__process(p_delta)
 
 
-func physics_process(p_delta: float) -> void:
+func physics_process(p_delta : float) -> void:
 	"""
 	Callback to handle __physics_process(). Must be called manually by code
 	"""
@@ -245,10 +252,9 @@ func physics_process(p_delta: float) -> void:
 		m_current_state.__physics_process(p_delta)
 
 
-func input(p_event: InputEvent) -> void:
+func input(p_event : InputEvent) -> void:
 	"""
 	Callback to handle _input(). Must be called manually by code
 	"""
 	if m_current_state.m_input_enabled:
 		m_current_state.__input(p_event)
-
