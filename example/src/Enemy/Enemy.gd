@@ -45,10 +45,10 @@ func _ready() -> void:
 
 # This is required so that our FSM can handle updates
 func _input(event: InputEvent) -> void:
-	state_machine.__input(event)
+	state_machine.input(event)
 
 func _process(delta: float) -> void:
-	state_machine.__process(delta)
+	state_machine.process(delta)
 
 func distance_from_player() -> float:
 	"""

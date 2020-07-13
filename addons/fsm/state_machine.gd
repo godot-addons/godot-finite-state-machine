@@ -1,9 +1,10 @@
 extends Resource
 
+
 # Internal State Class -- StateMachine depends on this definition
 class State extends Resource:
 	# State ID
-	var id: String
+	var id : String
 
 	# WeakRef to object we want to manage the state of (object, node, etc)
 	var m_managed_object_weakref : WeakRef = null # using weakref to avoid memory leaks
@@ -38,24 +39,30 @@ class State extends Resource:
 
 class_name StateMachine
 
+
 # The state machine's target object, node, etc
 #var target = null setget set_managed_object, get_managed_object
 var m_managed_object_weakref : WeakRef = null # using weakref to avoid memory leaks
+
 
 # Dictionary of states by state id
 #var states = {} setget set_states, get_states
 var m_states : Dictionary = {}
 
+
 # Dictionary of valid state transitions
 #var transitions = {} setget set_transitions, get_transitions
 var m_transitions : Dictionary = {}
+
 
 # Reference to current state object
 #var current_state = null setget set_current_state, get_current_state
 var m_current_state_id : String = "" setget set_current_state
 
+
 # Internal current state object
 var m_current_state : State = null
+
 
 func set_managed_object(p_managed_object : Object):
 	"""
@@ -65,11 +72,13 @@ func set_managed_object(p_managed_object : Object):
 	for s in m_states:
 		m_states[s].m_managed_object_weakref = weakref(p_managed_object)
 
+
 func get_managed_object() -> Object:
 	"""
 	Returns the target object (node, object, etc)
 	"""
 	return m_managed_object_weakref.get_ref()
+
 
 func set_states(p_states : Array) -> void:
 	"""
@@ -79,11 +88,13 @@ func set_states(p_states : Array) -> void:
 		if s.id && s.state:
 			set_state(s.id, s.state.new())
 
+
 func get_states() -> Dictionary:
 	"""
 	Returns the dictionary of states
 	"""
 	return m_states
+
 
 func set_transitions(p_transitions : Array) -> void:
 	"""
@@ -93,11 +104,13 @@ func set_transitions(p_transitions : Array) -> void:
 		if t.state_id && t.to_states:
 			set_transition(t.state_id, t.to_states)
 
+
 func get_transitions() -> Dictionary:
 	"""
 	Returns the dictionary of transitions
 	"""
 	return m_transitions
+
 
 func set_current_state(p_state_id : String) -> void:
 	"""
@@ -109,11 +122,13 @@ func set_current_state(p_state_id : String) -> void:
 	else:
 		print_debug("Cannot set current state, invalid state: ", p_state_id)
 
+
 func get_current_state_id() -> String:
 	"""
 	Returns the string id of the current state
 	"""
 	return m_current_state_id
+
 
 func set_state_machine(p_states : Array) -> void:
 	"""
@@ -121,6 +136,7 @@ func set_state_machine(p_states : Array) -> void:
 	"""
 	for state in p_states:
 		state.set_state_machine(weakref(self))
+
 
 func set_state(p_state_id : String, p_state : State) -> void:
 	"""
@@ -134,6 +150,7 @@ func set_state(p_state_id : String, p_state : State) -> void:
 	if m_managed_object_weakref:
 		p_state.set_managed_object(m_managed_object_weakref)
 
+
 func set_transition(p_state_id: String, p_to_states: Array) -> void:
 	"""
 	Set valid transitions for a state. Expects state id and array of to state ids.
@@ -143,6 +160,7 @@ func set_transition(p_state_id: String, p_to_states: Array) -> void:
 		m_transitions[p_state_id] = {"to_states": p_to_states}
 	else:
 		print_debug("Cannot set transition, invalid state: ", p_state_id)
+
 
 func add_transition(from_state_id: String, p_to_state_id: String) -> void:
 	"""
@@ -162,6 +180,7 @@ func add_transition(from_state_id: String, p_to_state_id: String) -> void:
 	else:
 		m_transitions[from_state_id] = {"to_states": [p_to_state_id]}
 
+
 func get_state(p_state_id: String) -> State:
 	"""
 	Return the state from the states dictionary by state id if it exists
@@ -173,6 +192,7 @@ func get_state(p_state_id: String) -> State:
 
 	return null
 
+
 func get_transition(p_state_id: String) -> Dictionary:
 	"""
 	Return the transition from the transitions dictionary by state id if it exists
@@ -183,6 +203,7 @@ func get_transition(p_state_id: String) -> Dictionary:
 	print_debug("ERROR: Cannot get transition, invalid state: ", p_state_id)
 
 	return {}
+
 
 func transition(p_state_id: String) -> void:
 	"""
@@ -207,21 +228,24 @@ func transition(p_state_id: String) -> void:
 	if to_state.m_enter_state_enabled:
 		to_state.__on_enter_state()
 
-func __process(p_delta: float) -> void:
+
+func process(p_delta: float) -> void:
 	"""
 	Callback to handle _process(). Must be called manually by code
 	"""
 	if m_current_state.m_process_enabled:
 		m_current_state.__process(p_delta)
 
-func __physics_process(p_delta: float) -> void:
+
+func physics_process(p_delta: float) -> void:
 	"""
 	Callback to handle __physics_process(). Must be called manually by code
 	"""
 	if m_current_state.m_physics_process_enabled:
 		m_current_state.__physics_process(p_delta)
 
-func __input(p_event: InputEvent) -> void:
+
+func input(p_event: InputEvent) -> void:
 	"""
 	Callback to handle _input(). Must be called manually by code
 	"""
