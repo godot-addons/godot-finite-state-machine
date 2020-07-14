@@ -16,12 +16,51 @@ var m_managed_object_weakref : WeakRef = null # using weakref to avoid memory le
 var m_state_machine_weakref : WeakRef = null # using weakref to avoid memory leaks
 
 # Internal State Variables trigger processing
-var m_process_enabled : bool = true
-var m_physics_process_enabled : bool = true
-var m_input_enabled : bool = true
-var m_enter_state_enabled : bool = true
-var m_exit_state_enabled : bool = true
+var m_process_enabled : bool = true setget set_process_enabled, is_process_enabled
+var m_physics_process_enabled : bool = true setget set_physics_process_enabled, is_physics_process_enabled
+var m_input_enabled : bool = true setget set_input_enabled, is_input_enabled
+var m_enter_state_enabled : bool = true setget set_enter_state_enabled, is_enter_state_enabled
+var m_exit_state_enabled : bool = true setget set_exit_state_enabled, is_exit_state_enabled
 
+
+func set_process_enabled(p_value : bool) -> void:
+	m_process_enabled = p_value
+
+
+func is_process_enabled() -> bool:
+	return m_process_enabled
+
+
+func is_physics_process_enabled() -> bool:
+	return m_physics_process_enabled
+
+
+func set_physics_process_enabled(p_value : bool) -> void:
+	m_physics_process_enabled = p_value
+
+
+func set_input_enabled(p_value : bool) -> void:
+	m_input_enabled = p_value
+
+
+func is_input_enabled() -> bool:
+	return m_input_enabled
+
+
+func set_enter_state_enabled(p_value : bool) -> void:
+	m_enter_state_enabled = p_value
+
+
+func is_enter_state_enabled() -> bool:
+	return m_enter_state_enabled
+
+
+func set_exit_state_enabled(p_value : bool) -> void:
+	m_exit_state_enabled = p_value
+
+
+func is_exit_state_enabled() -> bool:
+	return m_exit_state_enabled
 
 # State machine callback called during transition when entering this state
 func __on_enter_state(p_transition_data : Dictionary = {}) -> void:

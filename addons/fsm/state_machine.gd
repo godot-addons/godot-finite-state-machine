@@ -65,6 +65,11 @@ func get_states() -> Dictionary:
 	"""
 	return m_states
 
+func get_states_stack() -> Array:
+	"""
+	Returns the states stack
+	"""
+	return m_states_stack
 
 func set_transitions(p_transitions : Array) -> void:
 	"""
@@ -380,6 +385,7 @@ func input(p_event : InputEvent) -> void:
 func freeze_except(p_state : State) -> void:
 	"""
 	Call to freeze processing on every state except the one specified
+	Useful for using on State.__on_enter_state when a single state must be processed
 	"""
 	if len(m_state_stack_process_backup) > 0:
 		push_warning("StateMachine has been frozen previously -- unfreeze data could possibly be lost")
@@ -387,23 +393,24 @@ func freeze_except(p_state : State) -> void:
 	for state in m_states_stack:
 		if state != p_state:
 			# Backup State
-			m_state_stack_process_backup[state]["m_process_enabled"] = state.m_process_enabled
-			m_state_stack_process_backup[state]["m_physics_process_enabled"] = state.m_physics_process_enabled
-			m_state_stack_process_backup[state]["m_input_enabled"] = state.m_input_enabled
-			m_state_stack_process_backup[state]["m_enter_state_enabled"] = state.m_enter_state_enabled
-			m_state_stack_process_backup[state]["m_exit_state_enabled"] = state.m_exit_state_enabled
+			m_state_stack_process_backup[state]["is_process_enabled"] = state.is_process_enabled()
+			m_state_stack_process_backup[state]["is_physics_process_enabled"] = state.is_physics_process_enabled()
+			m_state_stack_process_backup[state]["is_input_enabled"] = state.is_input_enabled()
+			m_state_stack_process_backup[state]["is_enter_state_enabled"] = state.is_enter_state_enabled()
+			m_state_stack_process_backup[state]["is_exit_state_enabled"] = state.is_exit_state_enabled()
 
 			# Disable processing
-			state.m_process_enabled = false
-			state.m_physics_process_enabled = false
-			state.m_input_enabled = false
-			state.m_enter_state_enabled = false
-			state.m_exit_state_enabled = false
+			state.set_process_enabled(false)
+			state.set_physics_process_enabled(false)
+			state.set_input_enabled(false)
+			state.set_enter_state_enabled(false)
+			state.set_exit_state_enabled(false)
 
 
 func unfreeze() -> void:
 	"""
 	Call to unfreeze processing on the remaining states
+	Useful for using on State.__on_exit_state when the current state has previously frozen the processing of the remaining states
 	"""
 	if len(m_state_stack_process_backup) == 0:
 		push_error("StateMachine has never been freezed previously! Cannot unfreeze state stack!")
@@ -411,11 +418,11 @@ func unfreeze() -> void:
 
 	for state in m_states_stack:
 		if state in m_state_stack_process_backup:
-			state.m_process_enabled = m_state_stack_process_backup[state]["m_process_enabled"]
-			state.m_physics_process_enabled = m_state_stack_process_backup[state]["m_physics_process_enabled"]
-			state.m_input_enabled = m_state_stack_process_backup[state]["m_input_enabled"]
-			state.m_enter_state_enabled = m_state_stack_process_backup[state]["m_enter_state_enabled"]
-			state.m_exit_state_enabled = m_state_stack_process_backup[state]["m_exit_state_enabled"]
+			state.set_process_enabled(m_state_stack_process_backup[state]["is_process_enabled"])
+			state.set_physics_process_enabled(m_state_stack_process_backup[state]["is_physics_process_enabled"])
+			state.set_input_enabled(m_state_stack_process_backup[state]["is_input_enabled"])
+			state.set_enter_state_enabled(m_state_stack_process_backup[state]["is_enter_state_enabled"])
+			state.set_exit_state_enabled(m_state_stack_process_backup[state]["is_exit_state_enabled"])
 
 	# Clear backup
 	m_state_stack_process_backup.clear()
