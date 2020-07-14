@@ -4,9 +4,6 @@ extends Resource
 class_name State
 """
 State objects used in a StateMachine.
-
-Usage Notes:
-	See StateMachine docstring.
 """
 
 # State ID

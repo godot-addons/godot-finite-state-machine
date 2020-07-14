@@ -7,13 +7,6 @@ signal state_popped(p_pushed_state)
 class_name StateMachine
 """
 StateMachine class to manage states -- can be used concurrently.
-
-Usage Notes:
-	The object that the StateMachine manages the state of must hold references
-	to a StateMachine instance and instances to the State objects at all times.
-	This implementation of a StateMachine only uses weak references to
-	reference-counted State objects in order to avoid cyclic dependencies that
-	could lead to memory leaks.
 """
 
 # The state machine's target object, node, etc
@@ -32,9 +25,7 @@ var m_current_transitionable_state_id : String = "" setget set_current_transitio
 # Reference to the current transitionable state object
 var m_current_transitionable_state : State setget set_current_transitionable_state
 
-
 # Stack of weak reference to states instances
-# Transitions only happen between elements at stack position 0
 var m_states_stack : Array = []
 
 # Dictionary that backs up the processing state of each state on the stack
@@ -97,8 +88,7 @@ func push(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
 	Pushed state will be processed last than the rest
 	"""
 	if p_state_id in m_states:
-		var p_state : State = m_state_classes[p_state_id].new()
-		__initialize_state(p_state)
+		var p_state : State = __create_state(p_state_id)
 
 		if p_state.m_enter_state_enabled:
 			p_state.__on_enter_state(p_transition_data)
@@ -114,8 +104,7 @@ func push_front(p_state_id : String, p_transition_data : Dictionary = {}) -> voi
 	Pushed state will be processed first than the rest
 	"""
 	if p_state_id in m_states:
-		var p_state : State = m_state_classes[p_state_id].new()
-		__initialize_state(p_state)
+		var p_state : State = __create_state(p_state_id)
 
 		if p_state.m_enter_state_enabled:
 			p_state.__on_enter_state(p_transition_data)
@@ -124,6 +113,49 @@ func push_front(p_state_id : String, p_transition_data : Dictionary = {}) -> voi
 		emit_signal("state_pushed", p_state)
 	else:
 		push_error("Cannot push invalid state to the front of the stack: " + p_state_id)
+
+func push_unique(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
+	"""
+	Guarantees state processing order is not modified - state will be processed last
+	If a previous state with the same ID exists, it will not be added to the stack
+	"""
+	if p_state_id in m_states:
+		for state in m_states_stack:
+			if state.m_id == p_state_id:
+				push_warning("State ID \"" + p_state_id + "\" is already being processed on the stack. Skipping...")
+				return
+
+		var p_state : State = __create_state(p_state_id)
+
+		if p_state.m_enter_state_enabled:
+			p_state.__on_enter_state(p_transition_data)
+
+		m_states_stack.push_back(p_state)
+		emit_signal("state_pushed", p_state)
+	else:
+		push_error("Cannot push invalid state to the back of the stack: " + p_state_id)
+
+
+func push_front_unique(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
+	"""
+	Pushed state will be processed first
+	If a previous state with the same ID exists, it will not be added to the stack.
+	"""
+	if p_state_id in m_states:
+		for state in m_states_stack:
+			if state.m_id == p_state_id:
+				push_warning("State ID \"" + p_state_id + "\" is already being processed on the stack. Skipping...")
+				return
+
+		var p_state : State = __create_state(p_state_id)
+
+		if p_state.m_enter_state_enabled:
+			p_state.__on_enter_state(p_transition_data)
+
+		m_states_stack.push_front(p_state)
+		emit_signal("state_pushed", p_state)
+	else:
+		push_error("Cannot push invalid state to the back of the stack: " + p_state_id)
 
 
 func pop() -> void:
@@ -390,7 +422,10 @@ func unfreeze() -> void:
 
 
 # Private Functions
-func __initialize_state(p_state : State) -> void:
-	p_state.m_state_machine_weakref = weakref(self)
+func __create_state(p_state_id : String) -> State:
+	var new_state = m_state_classes[p_state_id].new()
+	new_state.m_id = p_state_id
+	new_state.m_state_machine_weakref = weakref(self)
 	if m_managed_object_weakref:
-		p_state.m_managed_object_weakref = m_managed_object_weakref
+		new_state.m_managed_object_weakref = m_managed_object_weakref
+	return new_state
