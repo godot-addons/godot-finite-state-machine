@@ -92,7 +92,7 @@ sm.add_transition("patrol", "idle")
 sm.set_target(get_tree().get_root().get_node("enemy"))
 
 # Set the initial state of the state machine
-sm.set_current_state("patrol")
+sm.set_current_transitionable_state("patrol")
 ```
 
 ## State Machine
