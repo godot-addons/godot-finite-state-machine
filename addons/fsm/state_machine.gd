@@ -140,6 +140,12 @@ func push(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
 	Guarantees state processing order is not modified
 	Pushed stackable state will be processed last than the rest
 	"""
+	# The stack could be getting processed when this function fires -- better
+	# to call it during idle time.
+	call_deferred("__push_back", p_state_id, p_transition_data)
+
+
+func __push_back(p_state_id : String, p_transition_data : Dictionary = {}):
 	if p_state_id in m_stackable_states:
 		var p_state : State = __create_state(p_state_id)
 
@@ -156,6 +162,12 @@ func push_front(p_state_id : String, p_transition_data : Dictionary = {}) -> voi
 	"""
 	Pushed state will be processed first than the rest
 	"""
+	# The stack could be getting processed when this function fires -- better
+	# to call it during idle time.
+	call_deferred("__push_front", p_state_id, p_transition_data)
+
+
+func __push_front(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
 	if p_state_id in m_stackable_states:
 		var p_state : State = __create_state(p_state_id)
 
@@ -173,6 +185,12 @@ func push_unique(p_state_id : String, p_transition_data : Dictionary = {}) -> vo
 	Guarantees state processing order is not modified - state will be processed last
 	If a previous state with the same ID exists, it will not be added to the stack
 	"""
+	# The stack could be getting processed when this function fires -- better
+	# to call it during idle time.
+	call_deferred("__push_back_unique", p_state_id, p_transition_data)
+
+
+func __push_back_unique(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
 	if p_state_id in m_stackable_states:
 		for state in m_states_stack:
 			if state.m_id == p_state_id:
@@ -195,6 +213,12 @@ func push_front_unique(p_state_id : String, p_transition_data : Dictionary = {})
 	Pushed state will be processed first
 	If a previous state with the same ID exists, it will not be added to the stack.
 	"""
+	# The stack could be getting processed when this function fires -- better
+	# to call it during idle time.
+	call_deferred("__push_front_unique", p_state_id, p_transition_data)
+
+
+func __push_front_unique(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
 	if p_state_id in m_transitionable_states:
 		for state in m_states_stack:
 			if state.m_id == p_state_id:
@@ -217,6 +241,12 @@ func pop() -> void:
 	Guarantees state processing order is not modified
 	Removes the state that is being processed last
 	"""
+	# The stack could be getting processed when this function fires -- better
+	# to call it during idle time.
+	call_deferred("__pop_back")
+
+
+func __pop_back() -> void:
 	if len(m_states_stack) == 1:
 		push_error("Could not pop state from the stack -- there's is only one element: " + m_states_stack[0].m_id)
 		return
@@ -238,6 +268,12 @@ func pop_state(p_state : State):
 	"""
 	Removes a specific state from the stack if found
 	"""
+	# The stack could be getting processed when this function fires -- better
+	# to call it during idle time.
+	call_deferred("__pop_state", p_state)
+
+
+func __pop_state(p_state : State):
 	if len(m_states_stack) == 1:
 		push_error("Could not pop state from the stack -- there's is only one element: " + m_states_stack[0].m_id)
 		return
@@ -259,6 +295,12 @@ func pop_front() -> void:
 	"""
 	Remove state that is being processed first
 	"""
+	# The stack could be getting processed when this function fires -- better
+	# to call it during idle time.
+	call_deferred("__pop_front")
+
+
+func __pop_front() -> void:
 	if len(m_states_stack) == 1:
 		push_error("Could not pop state from the stack -- there's is only one element: " + m_states_stack[0].m_id)
 		return
