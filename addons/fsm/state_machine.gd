@@ -90,17 +90,34 @@ func set_stackable_states(p_states : Array) -> void:
 			if !state_dict.id in m_stackable_states:
 				m_stackable_states.append(state_dict.id)
 
-func get_states() -> Dictionary:
+
+func get_transitionable_states() -> Dictionary:
 	"""
-	Returns the dictionary of states
+	Returns the dictionary of transitionable states
 	"""
 	return m_transitionable_states
+
+
+func get_stackable_states() -> Array:
+	"""
+	Returns the array of stackable states
+	"""
+	return m_stackable_states
+
+
+func get_state_classes() -> Dictionary:
+	"""
+	Returns the dictionary of stackable states
+	"""
+	return m_state_classes
+
 
 func get_states_stack() -> Array:
 	"""
 	Returns the states stack
 	"""
 	return m_states_stack
+
 
 func set_transitions(p_transitions : Array) -> void:
 	"""
@@ -149,6 +166,7 @@ func push_front(p_state_id : String, p_transition_data : Dictionary = {}) -> voi
 		emit_signal("state_pushed", p_state)
 	else:
 		push_error("Cannot push invalid stackable state to the front of the stack: " + p_state_id)
+
 
 func push_unique(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
 	"""
@@ -204,6 +222,12 @@ func pop() -> void:
 		return
 
 	var p_state : State = m_states_stack.pop_back()
+
+	if p_state == m_current_transitionable_state:
+		m_states_stack.append(p_state)
+		push_error("Cannot not pop transitoinable state from the stack: " + m_current_transitionable_state_id)
+		return
+
 	if p_state.m_exit_state_enabled:
 		p_state.__on_exit_state()
 
@@ -216,6 +240,10 @@ func pop_state(p_state : State):
 	"""
 	if len(m_states_stack) == 1:
 		push_error("Could not pop state from the stack -- there's is only one element: " + m_states_stack[0].m_id)
+		return
+
+	if p_state == m_current_transitionable_state:
+		push_error("Cannot not pop transitoinable state from the stack: " + m_current_transitionable_state_id)
 		return
 
 	if p_state in m_states_stack:
@@ -236,8 +264,14 @@ func pop_front() -> void:
 		return
 
 	var p_state : State = m_states_stack.pop_front()
+
+	if p_state == m_current_transitionable_state:
+		push_error("Cannot not pop transitoinable state from the stack: " + m_current_transitionable_state_id)
+		return
+
 	if p_state.m_exit_state_enabled:
 		p_state.__on_exit_state()
+
 	emit_signal("state_popped", p_state)
 
 
