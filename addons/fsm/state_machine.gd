@@ -13,7 +13,8 @@ StateMachine class to manage states -- can be used concurrently.
 var m_managed_object_weakref : WeakRef = null # using weakref to avoid memory leaks
 
 # Dictionary of states by state id
-var m_states : Dictionary = {} # Holds state id strings and state instances currently in use
+var m_transitionable_states : Dictionary = {} # Holds state id strings and state instances currently in use
+var m_stackable_states : Array = [] # Hold the state id of the stackable states
 var m_state_classes : Dictionary = {} # Holds a reference to each GDScript state class
 
 # Dictionary of valid state transitions
@@ -38,8 +39,8 @@ func set_managed_object(p_managed_object : Object):
 	Sets the target object, which could be a node or some other object that the states expect
 	"""
 	m_managed_object_weakref = weakref(p_managed_object)
-	for state_id in m_states:
-		m_states[state_id].m_managed_object_weakref = weakref(p_managed_object)
+	for state_id in m_transitionable_states:
+		m_transitionable_states[state_id].m_managed_object_weakref = weakref(p_managed_object)
 
 
 func get_managed_object() -> Object:
@@ -49,21 +50,51 @@ func get_managed_object() -> Object:
 	return m_managed_object_weakref.get_ref()
 
 
-func set_states(p_states : Array) -> void:
+func set_transitionable_states(p_states : Array) -> void:
 	"""
-	Expects an array of state definitions to generate the dictionary of states
+	Expects an array of transitionable state definitions to generate the dictionary of states
 	"""
 	for state_dict in p_states:
 		if state_dict.id && state_dict.state:
+			if state_dict.id in m_state_classes:
+				push_warning("State id \"" + state_dict.id + "\" class is getting overwritten")
 			m_state_classes[state_dict.id] = state_dict.state
-			set_state(state_dict.id, state_dict.state.new())
+			add_transitionable_state(state_dict.id, state_dict.state.new())
 
+func add_transitionable_state(p_state_id : String, p_state : State) -> void:
+	"""
+	Add a state to the states dictionary
+	"""
+	if p_state_id in m_transitionable_states:
+		push_error("Overwriting state: " + p_state_id)
+
+	m_transitionable_states[p_state_id] = p_state
+
+	p_state.m_id = p_state_id
+	p_state.m_state_machine_weakref = weakref(self)
+
+	if m_managed_object_weakref:
+		p_state.set_managed_object(m_managed_object_weakref)
+
+
+func set_stackable_states(p_states : Array) -> void:
+	"""
+	Expects an array of stackable state definitions to generate the dictionary of states
+	"""
+	for state_dict in p_states:
+		if state_dict.id && state_dict.state:
+			if state_dict.id in m_state_classes:
+				push_warning("State id \"" + state_dict.id + "\" class is getting overwritten")
+			# We only need to keep track of the stackable state
+			m_state_classes[state_dict.id] = state_dict.state
+			if !state_dict.id in m_stackable_states:
+				m_stackable_states.append(state_dict.id)
 
 func get_states() -> Dictionary:
 	"""
 	Returns the dictionary of states
 	"""
-	return m_states
+	return m_transitionable_states
 
 func get_states_stack() -> Array:
 	"""
@@ -90,9 +121,9 @@ func get_transitions() -> Dictionary:
 func push(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
 	"""
 	Guarantees state processing order is not modified
-	Pushed state will be processed last than the rest
+	Pushed stackable state will be processed last than the rest
 	"""
-	if p_state_id in m_states:
+	if p_state_id in m_stackable_states:
 		var p_state : State = __create_state(p_state_id)
 
 		if p_state.m_enter_state_enabled:
@@ -101,14 +132,14 @@ func push(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
 		m_states_stack.push_back(p_state)
 		emit_signal("state_pushed", p_state)
 	else:
-		push_error("Cannot push invalid state to the back of the stack: " + p_state_id)
+		push_error("Cannot push invalid stackable state to the back of the stack: " + p_state_id)
 
 
 func push_front(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
 	"""
 	Pushed state will be processed first than the rest
 	"""
-	if p_state_id in m_states:
+	if p_state_id in m_stackable_states:
 		var p_state : State = __create_state(p_state_id)
 
 		if p_state.m_enter_state_enabled:
@@ -117,14 +148,14 @@ func push_front(p_state_id : String, p_transition_data : Dictionary = {}) -> voi
 		m_states_stack.push_front(p_state)
 		emit_signal("state_pushed", p_state)
 	else:
-		push_error("Cannot push invalid state to the front of the stack: " + p_state_id)
+		push_error("Cannot push invalid stackable state to the front of the stack: " + p_state_id)
 
 func push_unique(p_state_id : String, p_transition_data : Dictionary = {}) -> void:
 	"""
 	Guarantees state processing order is not modified - state will be processed last
 	If a previous state with the same ID exists, it will not be added to the stack
 	"""
-	if p_state_id in m_states:
+	if p_state_id in m_stackable_states:
 		for state in m_states_stack:
 			if state.m_id == p_state_id:
 				push_warning("State ID \"" + p_state_id + "\" is already being processed on the stack. Skipping...")
@@ -146,7 +177,7 @@ func push_front_unique(p_state_id : String, p_transition_data : Dictionary = {})
 	Pushed state will be processed first
 	If a previous state with the same ID exists, it will not be added to the stack.
 	"""
-	if p_state_id in m_states:
+	if p_state_id in m_transitionable_states:
 		for state in m_states_stack:
 			if state.m_id == p_state_id:
 				push_warning("State ID \"" + p_state_id + "\" is already being processed on the stack. Skipping...")
@@ -160,7 +191,7 @@ func push_front_unique(p_state_id : String, p_transition_data : Dictionary = {})
 		m_states_stack.push_front(p_state)
 		emit_signal("state_pushed", p_state)
 	else:
-		push_error("Cannot push invalid state to the back of the stack: " + p_state_id)
+		push_error("Cannot push invalid stackable state to the front of the stack: " + p_state_id)
 
 
 func pop() -> void:
@@ -225,28 +256,12 @@ func set_state_machine(p_states : Array) -> void:
 		state.set_state_machine(weakref(self))
 
 
-func set_state(p_state_id : String, p_state : State) -> void:
-	"""
-	Add a state to the states dictionary
-	"""
-	if p_state_id in m_states:
-		push_error("Overwriting state: " + p_state_id)
-
-	m_states[p_state_id] = p_state
-
-	p_state.m_id = p_state_id
-	p_state.m_state_machine_weakref = weakref(self)
-
-	if m_managed_object_weakref:
-		p_state.set_managed_object(m_managed_object_weakref)
-
-
 func set_transition(p_state_id : String, p_to_states : Array) -> void:
 	"""
 	Set valid transitions for a state. Expects state id and array of to state ids.
 	If a state id does not exist in states dictionary, the transition will NOT be added.
 	"""
-	if p_state_id in m_states:
+	if p_state_id in m_transitionable_states:
 		if p_state_id in m_transitions:
 			push_error("Overwriting transition for state: " + p_state_id)
 		m_transitions[p_state_id] = {"to_states" : p_to_states}
@@ -259,7 +274,7 @@ func add_transition(from_state_id : String, p_to_state_id : String) -> void:
 	Add a transition for a state. This adds a single state to transitions whereas
 	set_transition is a full replace.
 	"""
-	if !from_state_id in m_states || !p_to_state_id in m_states:
+	if !from_state_id in m_transitionable_states || !p_to_state_id in m_transitionable_states:
 		push_error(
 			"Cannot add transition, invalid state(s): " +
 			"from_state_id=" + from_state_id +
@@ -277,8 +292,8 @@ func get_state(p_state_id : String) -> State:
 	"""
 	Return the state from the states dictionary by state id if it exists
 	"""
-	if p_state_id in m_states:
-		return m_states[p_state_id]
+	if p_state_id in m_transitionable_states:
+		return m_transitionable_states[p_state_id]
 
 	push_error("Cannot get state, invalid state: " + p_state_id)
 	return null
@@ -299,7 +314,7 @@ func set_current_transitionable_state(p_state : State) -> void:
 	"""
 	This is needed to keep a reference to know which state can be transitioned froom/to
 	"""
-	if p_state in m_states.values():
+	if p_state in m_transitionable_states.values():
 		m_current_transitionable_state = p_state
 	else:
 		push_error("Cannot set transitionable state with invalid state: " + str(p_state))
@@ -309,16 +324,16 @@ func set_current_transitionable_state_id(p_state_id : String) -> void:
 	"""
 	This is a 'just do it' method and does not validate transition change
 	"""
-	if p_state_id in m_states:
+	if p_state_id in m_transitionable_states:
 		if len(m_states_stack) == 0: # this is the first state we are settting the StateMachine to
 			m_current_transitionable_state_id = p_state_id
-			m_current_transitionable_state = m_states[p_state_id]
-			m_states_stack.append(m_states[p_state_id])
+			m_current_transitionable_state = m_transitionable_states[p_state_id]
+			m_states_stack.append(m_transitionable_states[p_state_id])
 		else:
 			if m_current_transitionable_state:
 				var transitionable_state_index = m_states_stack.find(m_current_transitionable_state)
 				if transitionable_state_index != -1:
-					var target_transitionable_state : State = m_states[p_state_id]
+					var target_transitionable_state : State = m_transitionable_states[p_state_id]
 					m_states_stack[transitionable_state_index] = target_transitionable_state
 					m_current_transitionable_state_id = target_transitionable_state.m_id
 				else:
@@ -335,7 +350,7 @@ func transition(p_state_id : String, p_transition_data : Dictionary = {}) -> voi
 	if not m_transitions.has(m_current_transitionable_state_id):
 		push_error("No transitions defined for state %s" % m_current_transitionable_state_id)
 		return
-	if !p_state_id in m_states || !p_state_id in m_transitions[m_current_transitionable_state_id].to_states:
+	if !p_state_id in m_transitionable_states || !p_state_id in m_transitions[m_current_transitionable_state_id].to_states:
 		push_error("Invalid transition from %s" % m_current_transitionable_state_id + " to %s" % p_state_id)
 		return
 

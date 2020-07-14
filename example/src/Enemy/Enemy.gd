@@ -15,12 +15,14 @@ onready var attack_circle = $AttackCircle
 
 func _ready() -> void:
 	state_machine = smf.create({
-		"target": self,
+		"managed_object": self,
 		"current_state_id": "idle",
-		"states": [
+		"transitionable_states": [
 			{"id": "idle", "state": IdleState},
 			{"id": "patrol", "state": PatrolState},
 			{"id": "attack", "state": AttackState},
+		],
+		"stackable_states": [
 			{"id": "powerup", "state": PowerUpState},
 		],
 		"transitions": [
