@@ -254,8 +254,8 @@ func __pop_back() -> void:
 	var p_state : State = m_states_stack.pop_back()
 
 	if p_state == m_current_transitionable_state:
-		m_states_stack.append(p_state)
-		push_error("Cannot not pop transitoinable state from the stack: " + m_current_transitionable_state_id)
+		m_states_stack.push_back(p_state)
+		push_error("Cannot not pop transitionable state from the stack: " + m_current_transitionable_state_id)
 		return
 
 	if p_state.m_exit_state_enabled:
@@ -279,7 +279,7 @@ func __pop_state(p_state : State):
 		return
 
 	if p_state == m_current_transitionable_state:
-		push_error("Cannot not pop transitoinable state from the stack: " + m_current_transitionable_state_id)
+		push_error("Cannot not pop transitionable state from the stack: " + m_current_transitionable_state_id)
 		return
 
 	if p_state in m_states_stack:
@@ -308,7 +308,8 @@ func __pop_front() -> void:
 	var p_state : State = m_states_stack.pop_front()
 
 	if p_state == m_current_transitionable_state:
-		push_error("Cannot not pop transitoinable state from the stack: " + m_current_transitionable_state_id)
+		m_states_stack.push_front(p_state)
+		push_error("Cannot not pop transitionable state from the stack: " + m_current_transitionable_state_id)
 		return
 
 	if p_state.m_exit_state_enabled:
