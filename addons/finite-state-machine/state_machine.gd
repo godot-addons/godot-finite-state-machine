@@ -480,7 +480,8 @@ func freeze_except(p_state : State) -> void:
 	Useful for using on State.__on_enter_state when a single state must be processed
 	"""
 	if len(m_state_stack_process_backup) > 0:
-		push_warning("StateMachine has been frozen previously -- unfreeze data could possibly be lost")
+		push_warning("StateMachine has been frozen previously! Can't freeze again!")
+		return
 
 	for state in m_states_stack:
 		if state != p_state:
