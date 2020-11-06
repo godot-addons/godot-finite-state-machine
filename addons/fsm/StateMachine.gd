@@ -72,11 +72,18 @@ func set_current_state(state_id: String) -> void:
 	else:
 		print("Cannot set current state, invalid state: ", state_id)
 
-func get_current_state() -> State:
+func get_current_state() -> String:
 	"""
 	Returns the string id of the current state
 	"""
 	return current_state
+
+
+func get_current_state_object() -> State:
+	"""
+	Returns the current State object
+	"""
+	return _current_state
 
 func set_state_machine(states: Array) -> void:
 	"""
