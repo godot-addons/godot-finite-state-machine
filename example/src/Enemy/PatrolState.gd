@@ -23,11 +23,11 @@ func _process(_delta: float) -> void:
 
 	# We're close to the target, let's attack them
 	if target.has_enemies():
-		state_machine.transition("attack")
+		state_machine.get_ref().transition("attack")
 
 	# We're far from the player, stop patrolling
 	elif not target.should_patrol():
-		state_machine.transition("idle")
+		state_machine.get_ref().transition("idle")
 
 func check_for_new_patrol_direction() -> void:
 	"""

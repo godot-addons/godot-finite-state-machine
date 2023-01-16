@@ -8,7 +8,7 @@ func _init().():
 
 func _process(_delta: float) -> void:
 	if not target.has_enemies():
-		state_machine.transition("patrol")
+		state_machine.get_ref().transition("patrol")
 		return
 
 	target.attack_enemies()
