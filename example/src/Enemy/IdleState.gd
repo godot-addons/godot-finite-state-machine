@@ -9,7 +9,7 @@ func _init().():
 func _process(_delta: float) -> void:
 	# Start patrolling when the player gets closer to us
 	if target.should_patrol():
-		state_machine.transition("patrol")
+		state_machine.get_ref().transition("patrol")
 
 func _on_enter_state() -> void:
 	target.say("I feel at peace.")

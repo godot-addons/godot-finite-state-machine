@@ -92,7 +92,7 @@ func set_state(state_id: String, state: State) -> void:
 	states[state_id] = state
 
 	state.id = state_id
-	state.state_machine = self
+	state.state_machine = weakref(self)
 
 	if target:
 		state.set_target(target)
@@ -199,7 +199,7 @@ class State extends Resource:
 	var target
 
 	# Reference to state machine
-	var state_machine: StateMachine
+	var state_machine: WeakRef
 
 	var process_enabled: bool = true
 	var physics_process_enabled: bool = true
