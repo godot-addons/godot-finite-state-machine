@@ -28,11 +28,13 @@ func set_target(new_target):
 	for s in states:
 		states[s].target = new_target
 
+
 func get_target():
 	"""
 	Returns the target object (node, object, etc)
 	"""
 	return target
+
 
 func set_states(states: Array) -> void:
 	"""
@@ -42,11 +44,13 @@ func set_states(states: Array) -> void:
 		if s.id && s.state:
 			set_state(s.id, s.state.new())
 
+
 func get_states() -> Dictionary:
 	"""
 	Returns the dictionary of states
 	"""
 	return states
+
 
 func set_transitions(transitions: Array) -> void:
 	"""
@@ -56,11 +60,13 @@ func set_transitions(transitions: Array) -> void:
 		if t.state_id && t.to_states:
 			set_transition(t.state_id, t.to_states)
 
+
 func get_transitions() -> Dictionary:
 	"""
 	Returns the dictionary of transitions
 	"""
 	return transitions
+
 
 func set_current_state(state_id: String) -> void:
 	"""
@@ -72,11 +78,20 @@ func set_current_state(state_id: String) -> void:
 	else:
 		print("Cannot set current state, invalid state: ", state_id)
 
-func get_current_state() -> State:
+
+func get_current_state() -> String:
 	"""
 	Returns the string id of the current state
 	"""
 	return current_state
+
+
+func get_current_state_object() -> State:
+	"""
+	Returns the current State object
+	"""
+	return _current_state
+
 
 func set_state_machine(states: Array) -> void:
 	"""
@@ -84,6 +99,7 @@ func set_state_machine(states: Array) -> void:
 	"""
 	for state in states:
 		state.set_state_machine(self)
+
 
 func set_state(state_id: String, state: State) -> void:
 	"""
@@ -97,6 +113,7 @@ func set_state(state_id: String, state: State) -> void:
 	if target:
 		state.set_target(target)
 
+
 func set_transition(state_id: String, to_states: Array) -> void:
 	"""
 	Set valid transitions for a state. Expects state id and array of to state ids.
@@ -106,6 +123,7 @@ func set_transition(state_id: String, to_states: Array) -> void:
 		transitions[state_id] = {"to_states": to_states}
 	else:
 		print("Cannot set transition, invalid state: ", state_id)
+
 
 func add_transition(from_state_id: String, to_state_id: String) -> void:
 	"""
@@ -125,6 +143,7 @@ func add_transition(from_state_id: String, to_state_id: String) -> void:
 	else:
 		transitions[from_state_id] = {"to_states": [to_state_id]}
 
+
 func get_state(state_id: String) -> State:
 	"""
 	Return the state from the states dictionary by state id if it exists
@@ -136,6 +155,7 @@ func get_state(state_id: String) -> State:
 
 	return null
 
+
 func get_transition(state_id: String) -> Dictionary:
 	"""
 	Return the transition from the transitions dictionary by state id if it exists
@@ -146,6 +166,7 @@ func get_transition(state_id: String) -> Dictionary:
 	print("ERROR: Cannot get transition, invalid state: ", state_id)
 
 	return {}
+
 
 func transition(state_id: String) -> void:
 	"""
@@ -170,12 +191,14 @@ func transition(state_id: String) -> void:
 	if to_state.enter_state_enabled:
 		to_state._on_enter_state()
 
+
 func _process(delta: float) -> void:
 	"""
 	Callback to handle _process(). Must be called manually by code
 	"""
 	if _current_state.process_enabled:
 		_current_state._process(delta)
+
 
 func _physics_process(delta: float) -> void:
 	"""
@@ -184,12 +207,14 @@ func _physics_process(delta: float) -> void:
 	if _current_state.physics_process_enabled:
 		_current_state._physics_process(delta)
 
+
 func _input(event: InputEvent) -> void:
 	"""
 	Callback to handle _input(). Must be called manually by code
 	"""
 	if _current_state.input_enabled:
 		_current_state._input(event)
+
 
 class State extends Resource:
 	# State ID
@@ -207,19 +232,24 @@ class State extends Resource:
 	var enter_state_enabled: bool = true
 	var leave_state_enabled: bool = true
 
+
 	# State machine callback called during transition when entering this state
 	func _on_enter_state() -> void:
 		push_warning("Unimplemented _on_enter_state")
+
 
 	# State machine callback called during transition when leaving this state
 	func _on_leave_state() -> void:
 		push_warning("Unimplemented _on_leave_state")
 
+
 	func _process(delta: float) -> void:
 		push_warning("Unimplemented _process(delta)")
 
+
 	func _physics_process(delta: float) -> void:
 		push_warning("Unimplemented _physics_process(delta)")
+
 
 	func _input(event: InputEvent) -> void:
 		push_warning("Unimplemented _input(event)")
